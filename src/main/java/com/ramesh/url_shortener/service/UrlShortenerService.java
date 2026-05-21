@@ -30,4 +30,11 @@ public class UrlShortenerService {
 
     }
 
+    public String getOriginalUrl(String shortCode) {
+        ShortUrl shortUrl = repository.findByShortCode(shortCode).
+                orElseThrow(()->new RuntimeException("short code not found"));
+        shortUrl.setClickCount(shortUrl.getClickCount()+1);
+        repository.save(shortUrl);
+        return shortUrl.getOriginalUrl();
+    }
 }
