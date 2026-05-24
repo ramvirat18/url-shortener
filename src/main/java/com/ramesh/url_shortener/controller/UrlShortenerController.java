@@ -1,6 +1,7 @@
 package com.ramesh.url_shortener.controller;
 
 import com.ramesh.url_shortener.dto.CreateShortUrlRequest;
+import com.ramesh.url_shortener.dto.CreateShortUrlResponse;
 import com.ramesh.url_shortener.entity.ShortUrl;
 import com.ramesh.url_shortener.repository.ShortUrlRepository;
 import com.ramesh.url_shortener.service.UrlShortenerService;
@@ -21,7 +22,7 @@ public class UrlShortenerController {
     private final UrlShortenerService service;
 
     @PostMapping
-    public ShortUrl createShortUrl(@Valid @RequestBody CreateShortUrlRequest request)
+    public CreateShortUrlResponse createShortUrl(@Valid @RequestBody CreateShortUrlRequest request)
     {
         return service.createShortUrl(request);
     }
