@@ -2,6 +2,7 @@ package com.ramesh.url_shortener.controller;
 
 import com.ramesh.url_shortener.dto.CreateShortUrlRequest;
 import com.ramesh.url_shortener.dto.CreateShortUrlResponse;
+import com.ramesh.url_shortener.dto.UrlAnalyticsResponse;
 import com.ramesh.url_shortener.entity.ShortUrl;
 import com.ramesh.url_shortener.repository.ShortUrlRepository;
 import com.ramesh.url_shortener.service.UrlShortenerService;
@@ -34,6 +35,14 @@ public class UrlShortenerController {
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(URI.create(originalUrl));
         return new ResponseEntity<>(headers, HttpStatus.FOUND);
+
+
+    }
+
+    @GetMapping("/{shortCode}/analytics")
+    public UrlAnalyticsResponse getAnalytics(@PathVariable String shortCode)
+    {
+        return service.getAnalytics(shortCode);
     }
 
 }

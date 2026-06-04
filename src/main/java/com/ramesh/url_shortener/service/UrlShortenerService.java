@@ -2,6 +2,7 @@ package com.ramesh.url_shortener.service;
 
 import com.ramesh.url_shortener.dto.CreateShortUrlRequest;
 import com.ramesh.url_shortener.dto.CreateShortUrlResponse;
+import com.ramesh.url_shortener.dto.UrlAnalyticsResponse;
 import com.ramesh.url_shortener.entity.ShortUrl;
 import com.ramesh.url_shortener.exception.ResourceNotFoundException;
 import com.ramesh.url_shortener.repository.ShortUrlRepository;
@@ -45,5 +46,18 @@ public class UrlShortenerService {
         shortUrl.setClickCount(shortUrl.getClickCount()+1);
         repository.save(shortUrl);
         return shortUrl.getOriginalUrl();
+    }
+
+    public UrlAnalyticsResponse getAnalytics(String shortCode)
+    {
+        ShortUrl shortUrl = repository.findByShortCode(shortCode).
+                orElseThrow(()->new ResourceNotFoundException("ShortUrl is not found"));
+
+        return UrlAnalyticsResponse.builder()
+                .originalUrl(shortUrl.getOriginalUrl())
+                .shortCode(shortUrl.getShortCode())
+                .clickCount(shortUrl.getClickCount())
+                .createdAt(shortUrl.getCreatedAt())
+                .build();
     }
 }
