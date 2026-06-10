@@ -8,7 +8,10 @@ import com.ramesh.url_shortener.exception.ResourceNotFoundException;
 import com.ramesh.url_shortener.repository.ShortUrlRepository;
 import com.ramesh.url_shortener.util.ShortCodeGenerator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+
+import java.time.Duration;
 
 @Service
 @RequiredArgsConstructor
@@ -16,6 +19,7 @@ public class UrlShortenerService {
 
     private  final ShortUrlRepository repository;
     String shortCode;
+    private final RedisTemplate<String,String> redisTemplate;
 
     public CreateShortUrlResponse createShortUrl(CreateShortUrlRequest request)
     {
@@ -30,6 +34,10 @@ public class UrlShortenerService {
 
              repository.save(shortUrl);
 
+             redisTemplate.opsForValue().set(
+                     shortCode,shortUrl.getOriginalUrl(), Duration.ofHours(24)
+             );
+
              return CreateShortUrlResponse.builder()
                      .originalUrl(shortUrl.getOriginalUrl())
                      .shortCode(shortUrl.getShortCode())
@@ -41,17 +49,33 @@ public class UrlShortenerService {
     }
 
     public String getOriginalUrl(String shortCode) {
-        ShortUrl shortUrl = repository.findByShortCode(shortCode).
-                orElseThrow(()->new ResourceNotFoundException("short code not found"));
+
+
+        String cachedUrl=redisTemplate.opsForValue().get(shortCode);
+        if(cachedUrl!=null)
+        {
+            incrementCount(shortCode);
+            return cachedUrl;
+        }
+
+        ShortUrl shortUrl = findUrlOrThrow(shortCode);
+
+        redisTemplate.opsForValue().set(shortCode,shortUrl.getOriginalUrl(),Duration.ofHours(24));
         shortUrl.setClickCount(shortUrl.getClickCount()+1);
         repository.save(shortUrl);
         return shortUrl.getOriginalUrl();
     }
 
+    public void incrementCount(String shortCode)
+    {
+        ShortUrl shortUrl = findUrlOrThrow(shortCode);
+        shortUrl.setClickCount(shortUrl.getClickCount()+1);
+        repository.save(shortUrl);
+    }
+
     public UrlAnalyticsResponse getAnalytics(String shortCode)
     {
-        ShortUrl shortUrl = repository.findByShortCode(shortCode).
-                orElseThrow(()->new ResourceNotFoundException("ShortUrl is not found"));
+        ShortUrl shortUrl = findUrlOrThrow(shortCode);
 
         return UrlAnalyticsResponse.builder()
                 .originalUrl(shortUrl.getOriginalUrl())
@@ -59,5 +83,10 @@ public class UrlShortenerService {
                 .clickCount(shortUrl.getClickCount())
                 .createdAt(shortUrl.getCreatedAt())
                 .build();
+    }
+
+    public ShortUrl findUrlOrThrow(String shortCode) {
+        return repository.findByShortCode(shortCode).
+                orElseThrow(() -> new ResourceNotFoundException("ShortUrl is not found"));
     }
 }
