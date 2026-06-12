@@ -54,24 +54,21 @@ public class UrlShortenerService {
         String cachedUrl=redisTemplate.opsForValue().get(shortCode);
         if(cachedUrl!=null)
         {
-            incrementCount(shortCode);
+            //incrementCount(shortCode);
+            redisTemplate.opsForValue().increment("clicks:"+shortCode);
             return cachedUrl;
         }
 
         ShortUrl shortUrl = findUrlOrThrow(shortCode);
 
         redisTemplate.opsForValue().set(shortCode,shortUrl.getOriginalUrl(),Duration.ofHours(24));
-        shortUrl.setClickCount(shortUrl.getClickCount()+1);
+        //shortUrl.setClickCount(shortUrl.getClickCount()+1);
+        redisTemplate.opsForValue().increment("clicks:"+shortCode);
         repository.save(shortUrl);
         return shortUrl.getOriginalUrl();
     }
 
-    public void incrementCount(String shortCode)
-    {
-        ShortUrl shortUrl = findUrlOrThrow(shortCode);
-        shortUrl.setClickCount(shortUrl.getClickCount()+1);
-        repository.save(shortUrl);
-    }
+
 
     public UrlAnalyticsResponse getAnalytics(String shortCode)
     {

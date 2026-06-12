@@ -28,6 +28,7 @@ public class ShortUrl {
     private LocalDateTime expiresAt;
     private Long clickCount;
 
+
     @PrePersist
     public void prePersist()
     {
