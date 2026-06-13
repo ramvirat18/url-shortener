@@ -19,7 +19,7 @@ public class UrlShortenerService {
 
     private  final ShortUrlRepository repository;
     String shortCode;
-    private final RedisTemplate<String,String> redisTemplate;
+    private final RedisTemplate<String,Object> redisTemplate;
 
     public CreateShortUrlResponse createShortUrl(CreateShortUrlRequest request)
     {
@@ -51,7 +51,7 @@ public class UrlShortenerService {
     public String getOriginalUrl(String shortCode) {
 
 
-        String cachedUrl=redisTemplate.opsForValue().get(shortCode);
+        String cachedUrl= (String) redisTemplate.opsForValue().get(shortCode);
         if(cachedUrl!=null)
         {
             //incrementCount(shortCode);

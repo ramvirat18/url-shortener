@@ -1,5 +1,6 @@
 package com.ramesh.url_shortener.exception;
 
+import com.ramesh.url_shortener.dto.ApiErrorResponse;
 import com.ramesh.url_shortener.dto.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -63,6 +64,15 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST
         );
     }
+
+    @ExceptionHandler(RateLimitExceededException.class)
+    public ResponseEntity<ApiErrorResponse> handleRateLimitExceed (RateLimitExceededException ex)
+    {
+        ApiErrorResponse response = new ApiErrorResponse(ex.getMessage(),LocalDateTime.now());
+
+        return  ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(response);
+    }
+
 
 
 }
